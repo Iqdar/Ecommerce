@@ -1,0 +1,79 @@
+﻿@model IEnumerable<Ecommerce.Models.Cart>
+@{
+    ViewData["Title"] = "Details";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div>
+    <h4>Order Details:</h4>
+    <hr />
+    <dl class="row">
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => @Model.ToList()[0].User.Name)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => @Model.ToList()[0].User.Name)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => @Model.ToList()[0].Order.Id)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => @Model.ToList()[0].Order.Id)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => @Model.ToList()[0].Order.Status)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => @Model.ToList()[0].Order.Status)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => @Model.ToList()[0].Order.PaymentStatus)
+        </dt>
+        @if(Model.ToList()[0].Order.PaymentStatus == true)
+            {
+            <dd class = "col-sm-10">
+                Paid
+            </dd>
+            }
+            else
+            {
+            <dd class = "col-sm-10">
+                Unpaid
+            </dd>
+            }
+    </dl>
+</div>
+
+ @foreach(var cart in Model){
+     <div class='CartBox'>
+         <div class='ImgBox'>
+             <img class='CartImage CI' src="~/Images/@cart.Inventory.ImageName"/>
+        </div>
+         <div class = 'CartDescription row'>
+             <div class='CDc1'>
+                 <div>            
+                     <h6><b>Item:</b></h6>
+                     @cart.Inventory.ItemName x @cart.Quantity
+                 </div>
+                 <br/>
+                 <div>
+                     <h6><b>Description:</b></h6>
+                     @Html.DisplayFor(c => cart.Inventory.Description)
+                 </div>
+                 <br/>
+             </div>
+             <div class='CDc2'>
+                 <div>
+                     <h6><b>Price:</b></h6>
+                     @Html.DisplayFor(c => cart.Cost)
+                 </div>
+                 <br/>
+                 @using (Html.BeginForm("Details", "Inventory", new { Id = cart.Id }, FormMethod.Post)){
+                         <button type="submit" class="btn btn-primary">View</button>
+                 }
+             </div>
+         </div>
+     </div>
+     <br/>
+     
+ }

@@ -1,0 +1,51 @@
+﻿@model IEnumerable<Ecommerce.Models.TempCart>
+
+@{
+    ViewData["Title"] = "Cart";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h1>Cart</h1>
+ @foreach(var cart in Model){
+     <div class='CartBox'>
+         <div class='ImgBox'>
+             <img class='CartImage CI' src="~/Images/@cart.Inventory.ImageName"/>
+        </div>
+         <div class = 'CartDescription row'>
+             <div class='CDc1'>
+                 <div>            install
+                     <h6><b>Item:</b></h6>
+                     @cart.Inventory.ItemName x @cart.Quantity
+                 </div>
+                 <br/>
+                 <div>
+                     <h6><b>Description:</b></h6>
+                     @Html.DisplayFor(c => cart.Inventory.Description)
+                 </div>
+                 <br/>
+             </div>
+             <div class='CDc2'>
+                 <div>
+                     <h6><b>Price:</b></h6>
+                     @Html.DisplayFor(c => cart.Cost)
+                 </div>
+                 <br/>
+                 @using (Html.BeginForm("DeleteCart", "Order", new { Id = cart.Id }, FormMethod.Post)){
+                         <button type="submit" class="btn btn-danger">Delete</button>
+                 }
+             </div>
+         </div>
+     </div>
+     <br/>
+     
+ }
+@if (Model.Any())
+{
+    <h4><b>Total Cost</b></h4>
+    <h5 id='total'>@Model.Sum(c => c.Cost)</h5>
+
+    @using (Html.BeginForm("AddOrder", "Order", FormMethod.Post))
+    {
+        <button type="submit" class="btn btn-success">Confirm Order</button>
+    }
+}

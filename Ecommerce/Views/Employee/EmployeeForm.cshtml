@@ -1,0 +1,39 @@
+﻿@model Ecommerce.Models.Employee;
+
+@{  
+    ViewData["Title"] = "EmployeeForm";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@if(Model.Id == 0){
+    <h1>Add Employee</h1>
+}
+else{
+    <h1>Edit Employee</h1>
+}
+
+@using (Html.BeginForm("Save", "Employee")){
+    <div>
+        <label>Name:</label>
+        @Html.TextBoxFor(c => c.Name, new {@class = "form-control"})
+        @Html.ValidationMessageFor(c => c.Name)
+    </div>
+    <div>
+        <label>Address:</label>
+        @Html.TextBoxFor(c => c.Address, new {@class = "form-control"})
+        @Html.ValidationMessageFor(c => c.Address)
+    </div>
+    <div>
+        <label>Birth Date:</label>
+        <input asp-for="BirthDate" class='form-control'/>
+        @Html.ValidationMessageFor(c => c.BirthDate)
+    </div>
+    <div>
+        <label>Date Joined:</label>
+        <input asp-for="DateJoined" class='form-control'/>
+        @Html.ValidationMessageFor(c => c.DateJoined)
+    </div>
+    
+    @Html.HiddenFor(m => m.Id)
+    <button type="submit" class="btn btn-primary">Submit</button>
+}

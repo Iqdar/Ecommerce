@@ -1,0 +1,71 @@
+﻿@model Ecommerce.Models.Inventory
+@using Microsoft.AspNetCore.Identity
+@using Ecommerce.Areas.Identity.Data
+
+@inject SignInManager<EcommerceUser> SignInManager
+@inject UserManager<EcommerceUser> UserManager
+
+@{
+    ViewData["Title"] = "Details";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h1>Details</h1>
+
+<div>
+    <h4>Inventory</h4>
+    <hr />
+    <dl class="row">
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.ItemName)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.ItemName)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.Description)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Description)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.StockRemaining)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.StockRemaining)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.Price)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Price)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.ImageName)
+        </dt>
+        <dd class = "col-sm-10" >
+            @if(Model.ImageName != "")
+            {
+            <img src="~/Images/@Model.ImageName" style='width: 300px; height: 300px;'/>
+            }
+        </dd>
+    </dl>
+</div>
+<h2>Add Order</h2>
+@if (SignInManager.IsSignedIn(User))
+{
+    @using (Html.BeginForm("AddCart", "Order"))
+    {
+        <div>
+            <label>Quantity:</label>
+            <input asp-for="OrderQuantity" class="form-control"/>
+            @Html.ValidationMessageFor(c => c.OrderQuantity)
+        </div>
+        @Html.HiddenFor(m => m.Id )
+        <button type="submit" class="btn btn-primary">Add Cart</button>
+    }
+}
+<div>
+    <a asp-action="Edit" asp-route-id="/id=@Model.Id&quantity=@Model.OrderQuantity">Edit</a> |
+    <a asp-action="Index">Back to List</a>
+</div>

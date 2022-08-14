@@ -1,0 +1,59 @@
+html {
+  font-size: 14px;
+}
+
+@media (min-width: 768px) {
+  html {
+    font-size: 16px;
+  }
+}
+
+html {
+  position: relative;
+  min-height: 100%;
+}
+
+body {
+  margin-bottom: 60px;
+}
+
+
+.CartBox {
+    border: 1px solid black;
+    border-radius: 9px;
+    min-height: 200px
+}
+
+.CartBox .ImgBox{
+    text-align:center
+}
+
+.CartImage {
+    margin: 17px;
+    width: 167px;
+    max-height: 167px;
+    border: 0px
+
+}
+
+.CartDescription {
+    margin: 17px;
+    
+}
+
+@media (min-width: 576px) {
+    .CI {
+        float: left
+    }
+
+    .CDc1 {
+        float:left;
+        width:50%
+    }
+
+    .CDc2{
+        float:right;
+        width:50%
+    }
+
+}

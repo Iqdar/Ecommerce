@@ -1,0 +1,44 @@
+﻿@model Ecommerce.Models.Inventory;
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@if (Model.Id == 0)
+{
+    <h2>New Item</h2>
+}
+else
+{
+    <h2>Edit Item</h2>
+}
+
+<form asp-action="Save" enctype="multipart/form-data"> 
+    <div>
+        <label>Name:</label>
+        @Html.TextBoxFor(c => c.ItemName, new { @class = "form-control"})
+        @Html.ValidationMessageFor(c => c.ItemName)
+    </div>
+    <div>
+        <label>Description:</label>
+        @Html.TextAreaFor(c => c.Description, new { @class = "form-control"})
+        @Html.ValidationMessageFor(c => c.Description)
+    </div>
+    <div>
+        <label>Stock Remaining:</label>
+        @Html.TextBoxFor(c => c.StockRemaining, new { @class = "form-control"})
+        @Html.ValidationMessageFor(c => c.StockRemaining)
+    </div>
+    <div>
+        <label>Price:</label>
+        @Html.TextBoxFor(c => c.Price, new { @class = "form-control"})
+        @Html.ValidationMessageFor(c => c.Price)
+    </div>
+    <div>
+        <label>Image:</label>
+        <input asp-for="Image" class="form-control"/>
+    </div>
+    
+    @Html.HiddenFor(m => m.Id)
+    <button type="submit" class="btn btn-primary">Submit</button>
+</form>
+    
