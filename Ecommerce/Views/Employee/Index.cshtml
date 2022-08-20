@@ -11,7 +11,7 @@
 <p>
     <a asp-action="Add">Create New</a>
 </p>
-<table id="employees" class='table'>
+<table id="employees" class='table table-bordered table-responsive'>
     <thead>
         <tr>
             <th>
@@ -36,7 +36,7 @@
 @section scripts{
     <script>
         $(document).ready(function(){
-            $('#employees').DataTable({
+            var table = $('#employees').DataTable({
                 ajax:{
                     url:"/api/Employee/",
                     dataSrc: ""
@@ -69,9 +69,9 @@
                         url:"/api/Employee/"+button.attr("data-employee-id"),
                         method: "DELETE",
                         success : function(){
-                            button.parents("<tr>").remove();
+                            table.row(button.parents("tr")).remove().draw();
                         }
-                    })
+                    });
                 }
             });
             

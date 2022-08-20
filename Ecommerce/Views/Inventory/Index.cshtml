@@ -10,7 +10,7 @@
 <p>
     <a asp-action="Add">Create New</a>
 </p>
-<table class="table">
+<table id="inventory" class="table table-bordered table-responsive">
     <thead>
         <tr>
             <th>
@@ -31,29 +31,40 @@
             <th></th>
         </tr>
     </thead>
-    <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.ItemName)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Description)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.StockRemaining)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Price)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.ImageName)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.Id">Details</a> 
-            </td>
-        </tr>
-}
-    </tbody>
+    <tbody></tbody>
 </table>
+ @section scripts{
+     <script>
+         $(document).ready(function(){
+             var table = $("#inventory").DataTable({
+                 ajax:{    
+                    url:"/api/Inventory/",
+                    dataSrc: ""
+                 },
+                 columns:[
+                     {
+                         data : "itemName"
+                     },
+                     {
+                         data : "description"
+                     },
+                     {
+                         data : "stockRemaining"
+                     },
+                     {
+                         data : "price"
+                     },
+                     {
+                         data : "imageName"
+                     },
+                     {
+                         data : "id",
+                         render: function(data){
+                             return "<a href='/Inventory/Details/"+data+"'>Details</a> | <a href='/Inventory/Edit/"+data+"'>Edit</a>";
+                         }
+                     }
+                 ]
+             });
+         });
+     </script>
+ }

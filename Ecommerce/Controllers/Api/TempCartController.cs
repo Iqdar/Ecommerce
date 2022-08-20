@@ -5,6 +5,7 @@ using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using Ecommerce.Areas.Identity.Data;
 using Ecommerce.Models;
+using Ecommerce.Models.ViewModels;   
 using Ecommerce.Dtos;
 using Microsoft.AspNetCore.Identity;
 
@@ -29,17 +30,17 @@ namespace Ecommerce.Controllers.Api
         }
 
         // GET: api/Example
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<TempCartDto>>> GetTempCarts()
+        [HttpGet("{userId}")]
+        public async Task<ActionResult<IEnumerable<TempCartDto>>> GetTempCarts(string userId)
         {
-            var tempCart = _context.TempCart.ToList();
+            var tempCart = _context.TempCart.Where(c => c.UserId == userId).Include(c => c.Inventory).Include(c => c.User).ToList();
             if (tempCart == null)
             {
                 return NotFound();
             }
             return _mapper.Map<List<TempCart>, List<TempCartDto>>(tempCart);
         }
-
+        /*
         // GET: api/Example/5
         [HttpGet("{id}")]
         public async Task<ActionResult<TempCartDto>> GetTempCart(int id)
@@ -57,7 +58,7 @@ namespace Ecommerce.Controllers.Api
 
             return _mapper.Map<TempCart, TempCartDto>(tempCart);
         }
-
+        */
         // PUT: api/Example/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
@@ -97,23 +98,61 @@ namespace Ecommerce.Controllers.Api
         // POST: api/Example
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<TempCartDto>> PostTempCart(TempCartDto tempCartDto)
+        public async Task<ActionResult<TempCartDto>> PostTempCart(TempCartDto tempCart)
         {
             if (_context.TempCart == null)
             {
                 return Problem("Entity set 'EcommerceContext.TempCart'  is null.");
             }
-            if (!ModelState.IsValid)
-            {
-                return Problem("Model state Error.");
-            }
-            var tempCart = _mapper.Map<TempCartDto, TempCart>(tempCartDto);
-            _context.TempCart.Add(tempCart);
-            await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetTempCart", new { id = tempCartDto.Id }, tempCartDto);
+            var inventory = _context.Inventory.Find(tempCart.InventoryId);
+            if(inventory == null)
+            {
+                return Problem("Item not found");
+            }
+            int stock = inventory.StockRemaining;
+            if (stock >= tempCart.Quantity)
+            {
+                var cart = _mapper.Map<TempCartDto, TempCart>(tempCart);
+                _context.TempCart.Add(cart);
+                await _context.SaveChangesAsync();
+
+
+            }
+            else
+            {
+                return Problem("Error");
+            }
+            /*var tempCart = _mapper.Map<TempCartDto, TempCart>(tempCartDto);
+            _context.TempCart.Add(tempCart);
+            await _context.SaveChangesAsync();*/
+
+            return CreatedAtAction("GetTempCart", new { id = tempCart.Id }, tempCart);
         }
 
+
+
+        // DELETE: api/Example/5
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteTempCart(int id)
+        {
+            if (_context.TempCart == null)
+            {
+                return NotFound();
+            }
+            var tempCart = await _context.TempCart.FindAsync(id);
+            if (tempCart == null)
+            {
+                return NotFound();
+            }
+            var inventory = await _context.Inventory.FindAsync(tempCart.InventoryId);
+            inventory.StockRemaining = inventory.StockRemaining + tempCart.Quantity;
+
+            _context.TempCart.Remove(tempCart);
+            await _context.SaveChangesAsync();
+
+            return NoContent();
+        }
 
         private bool TempCartExists(int id)
         {

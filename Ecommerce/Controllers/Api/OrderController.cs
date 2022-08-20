@@ -7,6 +7,7 @@ using Ecommerce.Areas.Identity.Data;
 using Ecommerce.Models;
 using Ecommerce.Dtos;
 using Microsoft.AspNetCore.Identity;
+using Ecommerce.Models.ViewModels;
 
 namespace Ecommerce.Controllers.Api
 {
@@ -32,7 +33,7 @@ namespace Ecommerce.Controllers.Api
         [HttpGet]
         public async Task<ActionResult<IEnumerable<OrderDto>>> GetOrders()
         {
-            var order = _context.Orders.ToList();
+            var order = _context.Orders.Include(c => c.User).ToList();
             if (order == null)
             {
                 return NotFound();
@@ -41,32 +42,28 @@ namespace Ecommerce.Controllers.Api
         }
 
         // GET: api/Example/5
-        [HttpGet("{id}")]
-        public async Task<ActionResult<OrderDto>> GetOrder(int id)
+        [HttpGet("{userId}")]
+        public async Task<ActionResult<IEnumerable<OrderDto>>> GetOrders(string userId)
         {
-            if (_context.Orders == null)
+            if (_context.Orders.Where(c => c.UserId == userId) == null)
             {
                 return NotFound();
             }
-            var order = await _context.Orders.FindAsync(id);
+            var order = _context.Orders.Where(c => c.UserId == userId).ToList();
 
             if (order == null)
             {
                 return NotFound();
             }
 
-            return _mapper.Map<Order, OrderDto>(order);
+            return _mapper.Map<List<Order>, List<OrderDto>>(order);
         }
 
         // PUT: api/Example/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutOrder(int id, OrderDto orderDto)
+        [HttpPut]
+        public async Task<IActionResult> PutOrder(OrderDto orderDto)
         {
-            if (id != orderDto.Id)
-            {
-                return BadRequest();
-            }
 
             if (!ModelState.IsValid)
             {
@@ -81,7 +78,7 @@ namespace Ecommerce.Controllers.Api
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!OrderExists(id))
+                if (!OrderExists(orderDto.Id))
                 {
                     return NotFound();
                 }
@@ -96,10 +93,51 @@ namespace Ecommerce.Controllers.Api
 
         // POST: api/Example
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPost]
-        public async Task<ActionResult<OrderDto>> PostOrder(OrderDto orderDto)
+        [HttpPost("{userId}")]
+        public async Task<ActionResult> PostOrder(string userId)
         {
-            if (_context.Orders == null)
+            OrderDto orderDto;
+            var tempCart = _context.TempCart.Where(c => c.UserId == _userManager.GetUserId(User)).ToList();
+            if (tempCart != null)
+            {
+                int orderTotal = 0;
+                for (int i = 0; i < tempCart.Count; i++)
+                {
+                    orderTotal = orderTotal + tempCart[i].Cost;
+                }
+
+                orderDto = new OrderDto();
+                orderDto.UserId = userId;
+                orderDto.Status = "Pending";
+                orderDto.Bill = orderTotal;
+                orderDto.PaymentStatus = false;
+
+
+                var order = _mapper.Map<OrderDto, Order>(orderDto);
+                _context.Orders.Add(order);
+                await _context.SaveChangesAsync();
+
+                int orderId = _context.Orders.Where(c => c.UserId == _userManager.GetUserId(User)).OrderByDescending(c => c.Id).FirstOrDefault().Id;
+
+                CartDto cartDto;
+
+                for (int i = 0; i < tempCart.Count; i++)
+                {
+
+                    cartDto = new CartDto();
+                    cartDto.OrderId = orderId;
+                    cartDto.UserId = userId;
+                    cartDto.Quantity = tempCart[i].Quantity;
+                    cartDto.Cost = tempCart[i].Cost;
+                    cartDto.InventoryId = tempCart[i].InventoryId;
+
+                    _context.Cart.Add(_mapper.Map<CartDto, Cart>(cartDto));
+                    _context.TempCart.Remove(tempCart[i]);
+                    await _context.SaveChangesAsync();
+                }
+            }
+
+            /*if (_context.Orders == null)
             {
                 return Problem("Entity set 'EcommerceContext.Order'  is null.");
             }
@@ -109,9 +147,9 @@ namespace Ecommerce.Controllers.Api
             }
             var order = _mapper.Map<OrderDto, Order>(orderDto);
             _context.Orders.Add(order);
-            await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync();*/
 
-            return CreatedAtAction("GetOrder", new { id = orderDto.Id }, orderDto);
+            return NoContent();
         }
 
 

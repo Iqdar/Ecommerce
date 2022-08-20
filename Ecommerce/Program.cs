@@ -15,7 +15,7 @@ builder.Services.AddDefaultIdentity<EcommerceUser>(options => options.SignIn.Req
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
-
+builder.Services.AddSwaggerGen();
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 var mapperConfig = new MapperConfiguration(mc => {
     mc.AddProfile(new MappingProfile());
@@ -33,7 +33,8 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
-
+app.UseSwagger();
+app.UseSwaggerUI();
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();

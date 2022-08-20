@@ -1,4 +1,10 @@
 ﻿@model IEnumerable<Ecommerce.Models.TempCart>
+@using Microsoft.AspNetCore.Identity
+@using Ecommerce.Areas.Identity.Data
+
+@inject SignInManager<EcommerceUser> SignInManager
+@inject UserManager<EcommerceUser> UserManager
+
 
 @{
     ViewData["Title"] = "Cart";
@@ -9,7 +15,7 @@
  @foreach(var cart in Model){
      <div class='CartBox'>
          <div class='ImgBox'>
-             <img class='CartImage CI' src="~/Images/@cart.Inventory.ImageName"/>
+             <img src="~/Images/@cart.Inventory.ImageName" class='CartImage CI'/>
         </div>
          <div class = 'CartDescription row'>
              <div class='CDc1'>
@@ -30,9 +36,7 @@
                      @Html.DisplayFor(c => cart.Cost)
                  </div>
                  <br/>
-                 @using (Html.BeginForm("DeleteCart", "Order", new { Id = cart.Id }, FormMethod.Post)){
-                         <button type="submit" class="btn btn-danger">Delete</button>
-                 }
+                 <button class = 'btn btn-danger js-delete' data-cart-id = @cart.Id>Remove</button>
              </div>
          </div>
      </div>
@@ -43,9 +47,34 @@
 {
     <h4><b>Total Cost</b></h4>
     <h5 id='total'>@Model.Sum(c => c.Cost)</h5>
+    <div id = 'order'>
+        <button class = 'btn btn-primary place-order' user-id = @UserManager.GetUserId(User)>Place Order</button>
+    </div>
 
-    @using (Html.BeginForm("AddOrder", "Order", FormMethod.Post))
-    {
-        <button type="submit" class="btn btn-success">Confirm Order</button>
-    }
+}
+
+@section scripts{
+    <script>
+        $(document).ready(function(){
+            $(".CartBox").on("click",".js-delete", function(){
+                var button = $(this);
+                if(confirm("Are you Sure?")){
+                    $.ajax({
+                        url:"/api/TempCart/"+button.attr("data-cart-id"),
+                        method: "DELETE",
+                        
+                    });
+                }
+            });
+            $("#order").on("click",".place-order", function(){
+                var button = $(this);
+                if(confirm("Place the Order?")){
+                    $.ajax({
+                        url:"/api/Order/"+button.attr("user-id"),
+                        method: "POST",
+                    });
+                }
+            });
+        })
+    </script>
 }

@@ -1,4 +1,4 @@
-﻿@model Ecommerce.Models.Inventory;
+﻿@model Ecommerce.Models.ViewModels.InventoryViewModel;
 @{
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
@@ -17,25 +17,30 @@ else
         <label>Name:</label>
         @Html.TextBoxFor(c => c.ItemName, new { @class = "form-control"})
         @Html.ValidationMessageFor(c => c.ItemName)
+        <br>
     </div>
     <div>
         <label>Description:</label>
         @Html.TextAreaFor(c => c.Description, new { @class = "form-control"})
         @Html.ValidationMessageFor(c => c.Description)
+        <br>
     </div>
     <div>
         <label>Stock Remaining:</label>
-        @Html.TextBoxFor(c => c.StockRemaining, new { @class = "form-control"})
+        <input asp-for="StockRemaining" class="form-control"/>
         @Html.ValidationMessageFor(c => c.StockRemaining)
+        <br>
     </div>
     <div>
         <label>Price:</label>
-        @Html.TextBoxFor(c => c.Price, new { @class = "form-control"})
+        <input asp-for="Price" class="form-control"/>
         @Html.ValidationMessageFor(c => c.Price)
+        <br>
     </div>
     <div>
         <label>Image:</label>
-        <input asp-for="Image" class="form-control"/>
+        <input asp-for="Image" />
+        <br>
     </div>
     
     @Html.HiddenFor(m => m.Id)

@@ -274,3 +274,5 @@ D:\Studies\Projects\Projects\Ecommerce\Ecommerce\bin\Debug\net6.0\libman.json
 D:\Studies\Projects\Projects\Ecommerce\Ecommerce\bin\Debug\net6.0\AutoMapper.dll
 D:\Studies\Projects\Projects\Ecommerce\Ecommerce\bin\Debug\net6.0\AutoMapper.Extensions.Microsoft.DependencyInjection.dll
 D:\Studies\Projects\Projects\Ecommerce\Ecommerce\obj\Debug\net6.0\Ecommerce.csproj.AssemblyReference.cache
+D:\Studies\Projects\Projects\Ecommerce\Ecommerce\bin\Debug\net6.0\System.Net.Http.Formatting.dll
+D:\Studies\Projects\Projects\Ecommerce\Ecommerce\bin\Debug\net6.0\Newtonsoft.Json.Bson.dll

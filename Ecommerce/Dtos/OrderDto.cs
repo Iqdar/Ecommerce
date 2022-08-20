@@ -9,6 +9,7 @@ namespace Ecommerce.Dtos
         public int Bill { get; set; }
         public string Status { get; set; }
         public bool PaymentStatus { get; set; }
+        public EcommerceUserDto User { get; set; }
         public string UserId { get; set; }
 
     }

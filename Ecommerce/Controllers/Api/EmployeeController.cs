@@ -14,14 +14,15 @@ namespace Ecommerce.Controllers.Api
     [ApiController]
     public class EmployeeController : ControllerBase
     {
-
+        private IWebHostEnvironment _webHostEnvironment;
         private readonly IMapper _mapper;
         private readonly EcommerceContext _context;
 
-        public EmployeeController(EcommerceContext context, IMapper mapper)
+        public EmployeeController(EcommerceContext context, IMapper mapper, IWebHostEnvironment webHostEnvironment)
         {
             _context = context;
             _mapper = mapper;
+            _webHostEnvironment = webHostEnvironment;
         }
 
         // GET: api/Example
@@ -56,13 +57,9 @@ namespace Ecommerce.Controllers.Api
 
         // PUT: api/Example/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutEmployee(int id, EmployeeDto employeeDto)
+        [HttpPut]
+        public async Task<IActionResult> PutEmployee(EmployeeDto employeeDto)
         {
-            if (id != employeeDto.Id)
-            {
-                return BadRequest();
-            }
 
             if (!ModelState.IsValid)
             {
@@ -77,7 +74,7 @@ namespace Ecommerce.Controllers.Api
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!EmployeeExists(id))
+                if (!EmployeeExists(employeeDto.Id))
                 {
                     return NotFound();
                 }

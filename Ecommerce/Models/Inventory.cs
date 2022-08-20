@@ -16,11 +16,5 @@ namespace Ecommerce.Models
         public int StockRemaining { get; set; }
         public int Price { get; set; }
         public string? ImageName { get; set; }
-        [NotMapped]
-        [DisplayName("Upload File")]
-        public IFormFile Image { get; set; }
-        [NotMapped]
-        [DisplayName("Quantity")]
-        public int OrderQuantity { get; set; }
     }
 }

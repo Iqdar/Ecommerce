@@ -13,19 +13,19 @@ namespace Ecommerce.Controllers.Api
     [ApiController]
     public class InventoryController : ControllerBase
     {
-
+        private IWebHostEnvironment _webHostEnvironment;
         private readonly IMapper _mapper;
         private readonly EcommerceContext _context;
 
-        public InventoryController(EcommerceContext context, IMapper mapper)
+        public InventoryController(EcommerceContext context, IMapper mapper, IWebHostEnvironment webHostEnvironment)
         {
             _context = context;
             _mapper = mapper;
+            _webHostEnvironment = webHostEnvironment;
         }
 
-        // GET: api/Example
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<InventoryDto>>> GetInventory()
+        public async Task<ActionResult<IEnumerable<InventoryDto>>> GetInventorys()
         {
             var inventory = _context.Inventory.ToList();
             if (inventory == null)
@@ -34,6 +34,7 @@ namespace Ecommerce.Controllers.Api
             }
             return _mapper.Map<List<Inventory>, List<InventoryDto>>(inventory);
         }
+
 
         // GET: api/Example/5
         [HttpGet("{id}")]
@@ -55,18 +56,15 @@ namespace Ecommerce.Controllers.Api
 
         // PUT: api/Example/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutInventory(int id, InventoryDto inventoryDto)
+        [HttpPut]
+        public async Task<IActionResult> PutInventory(InventoryDto inventoryDto)
         {
-            if (id != inventoryDto.Id)
-            {
-                return BadRequest();
-            }
 
             if (!ModelState.IsValid)
             {
                 return Problem("Model state Error.");
             }
+
             var inventory = _mapper.Map<InventoryDto, Inventory>(inventoryDto);
             _context.Entry(inventory).State = EntityState.Modified;
 
@@ -76,7 +74,7 @@ namespace Ecommerce.Controllers.Api
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!InventoryExists(id))
+                if (!InventoryExists(inventoryDto.Id))
                 {
                     return NotFound();
                 }
@@ -102,6 +100,7 @@ namespace Ecommerce.Controllers.Api
             {
                 return Problem("Model state Error.");
             }
+            
             var inventory = _mapper.Map<InventoryDto, Inventory>(inventoryDto);
             _context.Inventory.Add(inventory);
             await _context.SaveChangesAsync();

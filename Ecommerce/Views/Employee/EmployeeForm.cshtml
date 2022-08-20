@@ -17,21 +17,25 @@ else{
         <label>Name:</label>
         @Html.TextBoxFor(c => c.Name, new {@class = "form-control"})
         @Html.ValidationMessageFor(c => c.Name)
+        <br>
     </div>
     <div>
         <label>Address:</label>
         @Html.TextBoxFor(c => c.Address, new {@class = "form-control"})
         @Html.ValidationMessageFor(c => c.Address)
+        <br>
     </div>
     <div>
         <label>Birth Date:</label>
         <input asp-for="BirthDate" class='form-control'/>
         @Html.ValidationMessageFor(c => c.BirthDate)
+        <br>
     </div>
     <div>
         <label>Date Joined:</label>
         <input asp-for="DateJoined" class='form-control'/>
         @Html.ValidationMessageFor(c => c.DateJoined)
+        <br>
     </div>
     
     @Html.HiddenFor(m => m.Id)

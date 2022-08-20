@@ -4,6 +4,7 @@ using Ecommerce.Models;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Ecommerce.Models.ViewModels;
 
 namespace Ecommerce.Areas.Identity.Data;
 public class EcommerceContext : IdentityDbContext<EcommerceUser>
@@ -27,6 +28,8 @@ public class EcommerceContext : IdentityDbContext<EcommerceUser>
 
         builder.ApplyConfiguration(new EcommerceUserEntityConfiguration());
     }
+
+    public DbSet<Ecommerce.Models.ViewModels.InventoryViewModel>? InventoryViewModel { get; set; }
 }
 
 public class EcommerceUserEntityConfiguration : IEntityTypeConfiguration<EcommerceUser>

@@ -42,20 +42,20 @@ namespace Ecommerce.Controllers.Api
 
         // GET: api/Example/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<CartDto>> GetCart(int id)
+        public async Task<ActionResult<IEnumerable<CartDto>>> GetCart(int id)
         {
-            if (_context.Cart == null)
+            if (_context.Cart.Where(c => c.OrderId == id) == null)
             {
                 return NotFound();
             }
-            var cart = await _context.Cart.FindAsync(id);
+            var cart = _context.Cart.Where(c => c.OrderId == id).Include(c => c.Order).Include(c => c.Inventory).Include(c => c.User).ToList();
 
             if (cart == null)
             {
                 return NotFound();
             }
 
-            return _mapper.Map<Cart, CartDto>(cart);
+            return _mapper.Map<List<Cart>, List<CartDto>>(cart);
         }
 
         // PUT: api/Example/5
@@ -112,27 +112,6 @@ namespace Ecommerce.Controllers.Api
             await _context.SaveChangesAsync();
 
             return CreatedAtAction("GetCart", new { id = cartDto.Id }, cartDto);
-        }
-
-
-        // DELETE: api/Example/5
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteTempCart(int id)
-        {
-            if (_context.TempCart == null)
-            {
-                return NotFound();
-            }
-            var tempCart = await _context.TempCart.FindAsync(id);
-            if (tempCart == null)
-            {
-                return NotFound();
-            }
-
-            _context.TempCart.Remove(tempCart);
-            await _context.SaveChangesAsync();
-
-            return NoContent();
         }
 
         private bool CartExists(int id)

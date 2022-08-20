@@ -24,6 +24,10 @@ body {
     min-height: 200px
 }
 
+.field-validation-error{
+    color:red
+}
+
 .CartBox .ImgBox{
     text-align:center
 }

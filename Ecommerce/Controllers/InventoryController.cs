@@ -1,8 +1,11 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Ecommerce.Models;
+using Ecommerce.Models.ViewModels;
+using Ecommerce.Dtos;
 using Ecommerce.Areas.Identity.Data;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Identity;
 
 namespace Ecommerce.Controllers
 {
@@ -10,50 +13,128 @@ namespace Ecommerce.Controllers
     {
         private EcommerceContext _context;
         private IWebHostEnvironment _webHostEnvironment;
+        private UserManager<EcommerceUser> _userManager;
 
-        public InventoryController(EcommerceContext db, IWebHostEnvironment webHostEnvironment)
+        public InventoryController(EcommerceContext db, IWebHostEnvironment webHostEnvironment, UserManager<EcommerceUser> userManager)
         {
             _context = db;
             _webHostEnvironment = webHostEnvironment;
+            _userManager = userManager;
         }
 
         public ActionResult Add()
         {
-            Inventory inventory = new Inventory();
+            InventoryViewModel inventory = new InventoryViewModel();
             return View("InventoryForm", inventory);
         }
 
         public ActionResult Edit(int id)
         {
-            Inventory inventory = _context.Inventory.Single(c => c.Id == id);
-            return View("InventoryForm", inventory);
+            Inventory inventory = null;
+            InventoryViewModel ivm = new InventoryViewModel();
+            using (var client = new HttpClient())
+            {
+                client.BaseAddress = new Uri("https://localhost:7271/api/");
+                var responseTask = client.GetAsync("Inventory/" + id);
+                responseTask.Wait();
+
+                var result = responseTask.Result;
+                if (result.IsSuccessStatusCode)
+                {
+                    var readTast = result.Content.ReadAsAsync<Inventory>();
+                    readTast.Wait();
+                    inventory = readTast.Result;
+                }
+                ivm.Id = inventory.Id;
+                ivm.ItemName = inventory.ItemName;
+                ivm.Price = inventory.Price;
+                ivm.Description = inventory.Description;
+                ivm.ImageName = inventory.ImageName;
+                ivm.StockRemaining = inventory.StockRemaining;
+            }
+            return View("InventoryForm", ivm);
         }
 
-        [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Save(Inventory inventory)
+        public IActionResult Save(InventoryViewModel inventory)
         {
             if (!ModelState.IsValid)
             {
 
                 return View("InventoryForm", inventory);
 
-
             }
             else
             {
-
-                string fileName = null;
-                string wwwRootPath = _webHostEnvironment.WebRootPath;
-                string uploadDir = Path.Combine(wwwRootPath, "Images");
-                fileName = Guid.NewGuid().ToString() + "-" + inventory.Image.FileName;
-                string filePath = Path.Combine(uploadDir, fileName);
-                using (var fileStream = new FileStream(filePath, FileMode.Create))
+                Inventory iv = new Inventory();
+                iv.Id = inventory.Id;
+                iv.ItemName = inventory.ItemName;
+                iv.Description = inventory.Description;
+                iv.Price = inventory.Price;
+                iv.StockRemaining = inventory.StockRemaining;
+                
+                using (var client = new HttpClient())
                 {
-                    inventory.Image.CopyTo(fileStream);
-                }
+                    client.BaseAddress = new Uri("https://localhost:7271/api/");
+                    
+                    if (inventory.Id == 0)
+                    {
+                        if (inventory.Image != null)
+                        {
+                            string fileName = null;
+                            string wwwRootPath = _webHostEnvironment.WebRootPath;
+                            string uploadDir = Path.Combine(wwwRootPath, "Images");
+                            fileName = inventory.Image.FileName.ToString();
+                            string filePath = Path.Combine(uploadDir, fileName);
+                            iv.ImageName = fileName;
+                            using (var fileStream = new FileStream(filePath, FileMode.Create))
+                            {
+                                inventory.Image.CopyTo(fileStream);
+                            }
 
-                if (inventory.Id == 0)
+                        }
+                        var postTask = client.PostAsJsonAsync<Inventory>("Inventory", iv);
+                        postTask.Wait();
+                        var result = postTask.Result;
+                        if (result.IsSuccessStatusCode)
+                        {
+                            
+                            return RedirectToAction("Index");
+                        }
+                    }
+                    else
+                    {
+
+                        if (inventory.Image != null)
+                        {
+                            string fileName = null;
+                            string wwwRootPath = _webHostEnvironment.WebRootPath;
+                            string uploadDir = Path.Combine(wwwRootPath, "Images");
+                            fileName = inventory.Image.FileName.ToString();
+                            string filePath = Path.Combine(uploadDir, fileName);
+                            if (fileName != _context.Inventory.Find(inventory.Id).ImageName)
+                            {
+                                iv.ImageName = fileName;
+                                using (var fileStream = new FileStream(filePath, FileMode.Create))
+                                {
+                                    inventory.Image.CopyTo(fileStream);
+                                }
+                            }
+                        }
+                        var putTask = client.PutAsJsonAsync<Inventory>("Inventory", iv);
+                        putTask.Wait();
+
+                        var result = putTask.Result;
+                        if (result.IsSuccessStatusCode)
+                        {
+                            return RedirectToAction("Index");
+
+                        }
+
+                    }
+                }
+                /*
+                    if (inventory.Id == 0)
                 {
                     inventory.ImageName = fileName;
                     _context.Inventory.Add(inventory);
@@ -69,21 +150,60 @@ namespace Ecommerce.Controllers
                     inventoryInDb.Image = inventory.Image;
                     inventoryInDb.ImageName = fileName;
                 }
-                _context.SaveChanges();
+                _context.SaveChanges();*/
+
+                ModelState.AddModelError(string.Empty, "Server Error. Please contact administrator.");
             }
             
-            return RedirectToAction("Index", "Inventory");
+
+            return View("InventoryForm", inventory);
         }
 
         public ActionResult Details(int id)
         {
-            Inventory inventory = _context.Inventory.Single(c => c.Id == id);
-            return View(inventory);
+            Inventory inventory = null;
+            InventoryViewModel ivm = new InventoryViewModel();
+            using (var client = new HttpClient())
+            {
+                client.BaseAddress = new Uri("https://localhost:7271/api/");
+                var responseTask = client.GetAsync("Inventory/" + id);
+                responseTask.Wait();
+
+                var result = responseTask.Result;
+                if (result.IsSuccessStatusCode)
+                {
+                    var readTast = result.Content.ReadAsAsync<Inventory>();
+                    readTast.Wait();
+                    inventory = readTast.Result;
+                }
+                ivm.Id = inventory.Id;
+                ivm.ItemName = inventory.ItemName;
+                ivm.Price = inventory.Price;
+                ivm.Description = inventory.Description;
+                ivm.ImageName = inventory.ImageName;
+                ivm.StockRemaining = inventory.StockRemaining;
+                ivm.UserId = _userManager.GetUserId(User);
+            }
+            return View(ivm);
         }
 
         public IActionResult Index()
         {
-            var inventory = _context.Inventory.ToList();
+            IEnumerable<Inventory> inventory = null;
+            using (var client = new HttpClient())
+            {
+                client.BaseAddress = new Uri("https://localhost:7271/api/");
+                var responseTask = client.GetAsync("Inventory/");
+                responseTask.Wait();
+
+                var result = responseTask.Result;
+                if (result.IsSuccessStatusCode)
+                {
+                    var readTast = result.Content.ReadAsAsync<IList<Inventory>>();
+                    readTast.Wait();
+                    inventory = readTast.Result;
+                }
+            }
             return View(inventory);
         }
     }

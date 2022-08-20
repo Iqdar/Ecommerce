@@ -22,11 +22,25 @@ namespace Ecommerce.Controllers
 
         public ActionResult Edit(int id)
         {
-            Employee employee = _context.Employees.Single(c => c.Id == id);
+            Employee employee = null;
+            using (var client = new HttpClient())
+            {
+                client.BaseAddress = new Uri("https://localhost:7271/api/");
+                var responseTask = client.GetAsync("Employee/" + id);
+                responseTask.Wait();
+
+                var result = responseTask.Result;
+                if (result.IsSuccessStatusCode)
+                {
+                    var readTast = result.Content.ReadAsAsync<Employee>();
+                    readTast.Wait();
+                    employee = readTast.Result;
+                }
+            }
+
             return View("EmployeeForm", employee);
         }
 
-        [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult Save(Employee employee)
         {
@@ -36,7 +50,39 @@ namespace Ecommerce.Controllers
             }
             else
             {
-                if (employee.Id == 0)
+
+                using(var client = new HttpClient())
+                {
+                    client.BaseAddress = new Uri("https://localhost:7271/api/");
+
+                    if(employee.Id == 0)
+                    {
+                        var postTask = client.PostAsJsonAsync<Employee>("Employee", employee);
+                        postTask.Wait();
+
+                        var result = postTask.Result;
+                        if (result.IsSuccessStatusCode)
+                        {
+                            return RedirectToAction("Index");
+                        }
+                    }
+                    else
+                    {
+                        var putTask = client.PutAsJsonAsync<Employee>("Employee", employee);
+                        putTask.Wait();
+
+                        var result = putTask.Result;
+                        if (result.IsSuccessStatusCode)
+                        {
+
+                            return RedirectToAction("Index");
+                        }
+                    }
+
+                    ModelState.AddModelError(string.Empty, "Server Error. Please contact administrator.");
+                }
+
+                /*if (employee.Id == 0)
                 {
 
                     _context.Employees.Add(employee);
@@ -50,10 +96,10 @@ namespace Ecommerce.Controllers
                     employeeInDb.BirthDate = employee.BirthDate;
                     employeeInDb.DateJoined =  employee.DateJoined;
                 }
-                _context.SaveChanges();
+                _context.SaveChanges();*/
             }
 
-            return RedirectToAction("Index", "Employee");
+            return View("EmployeeForm", employee);
         }
 
         public ActionResult Delete(int id)
@@ -66,13 +112,47 @@ namespace Ecommerce.Controllers
 
         public ActionResult Details(int id)
         {
-            Employee employee = _context.Employees.Single(c => c.Id == id);
+            //Employee employee = _context.Employees.Single(c => c.Id == id);
+
+            Employee employee = null;
+            using (var client = new HttpClient())
+            {
+                client.BaseAddress = new Uri("https://localhost:7271/api/");
+                var responseTask = client.GetAsync("Employee/"+id);
+                responseTask.Wait();
+
+                var result = responseTask.Result;
+                if (result.IsSuccessStatusCode)
+                {
+                    var readTast = result.Content.ReadAsAsync<Employee>();
+                    readTast.Wait();
+                    employee = readTast.Result;
+                }
+            }
+
             return View(employee);
         }
 
         public IActionResult Index()
         {
-            var employee = _context.Employees.ToList();
+            //var employee = _context.Employees.ToList();
+
+            IEnumerable<Employee> employee = null;
+            using (var client = new HttpClient())
+            {
+                client.BaseAddress = new Uri("https://localhost:7271/api/");
+                var responseTask = client.GetAsync("Employee/");
+                responseTask.Wait();
+
+                var result = responseTask.Result;
+                if (result.IsSuccessStatusCode)
+                {
+                    var readTast = result.Content.ReadAsAsync<IList<Employee>>();
+                    readTast.Wait();
+                    employee = readTast.Result;
+                }
+            }
+
             return View(employee);
         }
     }

@@ -7,7 +7,7 @@
 
 <h1>Orders</h1>
 
-<table class="table">
+<table id="orders" class="table table-bordered">
     <thead>
         <tr>
             <th>
@@ -26,31 +26,38 @@
         </tr>
     </thead>
     <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.Bill)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Status)
-            </td>
-            @if(item.PaymentStatus == true){
-                <td>
-                    Paid
-                </td>
-            }
-            else{
-                <td>
-                    Unpaid
-                </td>
-            }            
-            <td>
-                @Html.DisplayFor(modelItem => item.User.Name)
-            </td>
-            <td>
-                <a asp-action="Details" asp-route-id="@item.Id">Details</a>
-            </td>
-        </tr>
-}
     </tbody>
 </table>
+
+@section scripts{
+    <script>
+        $(document).ready(function(){
+            var table = $("#orders").DataTable({
+                ajax:{    
+                    url:"/api/Order/",
+                    dataSrc: ""
+                 },
+                 columns:[
+                     {
+                         data: "bill"
+                     },
+                     {
+                         data: "status"
+                     },
+                     {
+                         data: "paymentStatus"
+                     },
+                     {
+                         data: "user.name"
+                     },
+                     {
+                         data : "id",
+                         render: function(data){
+                             return "<a href='/Order/Details/"+data+"'>Details</a>";
+                         }
+                     }
+                 ]
+            })
+        })
+    </script>
+}

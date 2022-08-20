@@ -1,4 +1,4 @@
-﻿@model Ecommerce.Models.Inventory
+﻿@model Ecommerce.Models.ViewModels.InventoryViewModel
 @using Microsoft.AspNetCore.Identity
 @using Ecommerce.Areas.Identity.Data
 
@@ -51,9 +51,20 @@
         </dd>
     </dl>
 </div>
-<h2>Add Order</h2>
 @if (SignInManager.IsSignedIn(User))
 {
+    <h2>Add Order</h2>
+    <form>
+        <div>
+            <label>Quantity:</label>
+            <input type='number' name='orderQuantity' id = 'orderQuantity' class="form-control"/>
+            @Html.ValidationMessageFor(c => c.OrderQuantity)
+        </div>
+        <br>
+        <div id='addCart'>
+            <input type="button" class='btn btn-primary' id="add-cart" value="Add Cart" />
+        </div>
+    </form>
     @using (Html.BeginForm("AddCart", "Order"))
     {
         <div>
@@ -61,7 +72,6 @@
             <input asp-for="OrderQuantity" class="form-control"/>
             @Html.ValidationMessageFor(c => c.OrderQuantity)
         </div>
-        @Html.HiddenFor(m => m.Id )
         <button type="submit" class="btn btn-primary">Add Cart</button>
     }
 }
@@ -69,3 +79,38 @@
     <a asp-action="Edit" asp-route-id="/id=@Model.Id&quantity=@Model.OrderQuantity">Edit</a> |
     <a asp-action="Index">Back to List</a>
 </div>
+
+@section scripts{
+    <script>
+        $(document).ready(function(){
+            $("#addCart").on("click","#add-cart", function(){
+
+                const tempCart = {
+                    Id: 0,
+                    Quantity: $('#orderQuantity').val(),
+                    Cost: @Model.Price *  $('#orderQuantity').val(),
+                    InventoryId: @Model.Id,
+                    UserId: '@UserManager.GetUserId(User)'
+
+                };
+                
+                 if(confirm("Add to Cart?")){
+                    console.log(tempCart)
+                    $.ajax({
+                        data: tempCart,
+                        url:"/api/TempCart/",
+                        method: "POST",
+                        type:"POST",
+                        dataType :'json',
+                        success: function(){
+                            console.log('Success')
+                        },
+                        error: function(){
+                            console.log(data)
+                        }
+                    });
+                }
+            });
+        })
+    </script>
+}

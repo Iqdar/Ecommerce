@@ -5,7 +5,9 @@ using Ecommerce.Areas.Identity.Data;
 using System.Linq;
 using Ecommerce.Areas.Identity.Pages.Account;
 using Ecommerce.Models;
+using Ecommerce.Dtos;
 using Microsoft.EntityFrameworkCore;
+using Ecommerce.Models.ViewModels;
 
 namespace Ecommerce.Controllers
 {
@@ -30,7 +32,24 @@ namespace Ecommerce.Controllers
         {
             if (_signInManager.IsSignedIn(User))
             {
-                var orders = _context.Orders.Where(c => c.UserId == _userManager.GetUserId(User)).Include(c => c.User).ToList();
+
+                IEnumerable<Order> orders = null;
+                using (var client = new HttpClient())
+                {
+                    client.BaseAddress = new Uri("https://localhost:7271/api/");
+                    var responseTask = client.GetAsync("Order/" + _userManager.GetUserId(User));
+                    responseTask.Wait();
+
+                    var result = responseTask.Result;
+                    if (result.IsSuccessStatusCode)
+                    {
+                        var readTast = result.Content.ReadAsAsync<IList<Order>>();
+                        readTast.Wait();
+                        orders = readTast.Result;
+                    }
+                }
+
+                //var orders = _context.Orders.Where(c => c.UserId == _userManager.GetUserId(User)).Include(c => c.User).ToList();
                 return View(orders);
             }
             return Redirect("/Identity/Account/Login/");
@@ -40,8 +59,24 @@ namespace Ecommerce.Controllers
         {
             if (_signInManager.IsSignedIn(User))
             {
-                var orderCart = _context.Cart.Where(c => c.OrderId == id).Include(c => c.User).Include(c => c.Inventory).Include(c => c.Order).ToList();
-                return View(orderCart);
+                IEnumerable<Cart> Cart = null;
+                using (var client = new HttpClient())
+                {
+                    client.BaseAddress = new Uri("https://localhost:7271/api/");
+                    var responseTask = client.GetAsync("Cart/"+id);
+                    responseTask.Wait();
+
+                    var result = responseTask.Result;
+                    if (result.IsSuccessStatusCode)
+                    {
+                        var readTast = result.Content.ReadAsAsync<IList<Cart>>();
+                        readTast.Wait();
+                        Cart = readTast.Result;
+                    }
+                }
+
+                //var orderCart = _context.Cart.Where(c => c.OrderId == id).Include(c => c.User).Include(c => c.Inventory).Include(c => c.Order).ToList();
+                return View(Cart);
             }
             return Redirect("/Identity/Account/Login/");
         }
@@ -50,37 +85,54 @@ namespace Ecommerce.Controllers
         {
             if (_signInManager.IsSignedIn(User))
             {
-                var cart = _context.TempCart.Include(c => c.Inventory).Include(c => c.User).Where(c => c.UserId == _userManager.GetUserId(User)).ToList();
-                return View(cart);
+                /*var cart = _context.TempCart.Include(c => c.Inventory).Include(c => c.User).Where(c => c.UserId == _userManager.GetUserId(User)).ToList();
+                return View(cart);*/
+                IEnumerable<TempCart> tempCart = null;
+                using (var client = new HttpClient())
+                {
+                    client.BaseAddress = new Uri("https://localhost:7271/api/");
+                    var responseTask = client.GetAsync("TempCart/"+_userManager.GetUserId(User));
+                    responseTask.Wait();
+
+                    var result = responseTask.Result;
+                    if (result.IsSuccessStatusCode)
+                    {
+                        var readTast = result.Content.ReadAsAsync<IList<TempCart>>();
+                        readTast.Wait();
+                        tempCart = readTast.Result;
+                    }
+                }
+                return View(tempCart);
             }
             return Redirect("/Identity/Account/Login/");
         }
 
-        public ActionResult AddCart(Inventory order)
+        public ActionResult AddCart(InventoryViewModel order)
         {
-
-            var inventory = _context.Inventory.Single(c => c.Id == order.Id);
-            int stock = inventory.StockRemaining;
-            if (_signInManager.IsSignedIn(User) && order.Id != 0 && order.Id != null && stock>= order.OrderQuantity)
+            TempCart cart = new TempCart();
+            cart.InventoryId = order.Id;
+            cart.UserId = _userManager.GetUserId(User);
+            cart.Quantity = order.OrderQuantity;
+            cart.Cost = order.Price * order.OrderQuantity;
+            if (_signInManager.IsSignedIn(User))
             {
+                using (var client = new HttpClient())
+                {
+                    client.BaseAddress = new Uri("https://localhost:7271/api/");
 
-                inventory.StockRemaining = inventory.StockRemaining - order.OrderQuantity;
+                    var postTask = client.PostAsJsonAsync<TempCart>("TempCart", cart);
+                    postTask.Wait();
+                    return RedirectToAction("Index");
 
-                int itemId = order.Id;
-                int pricePerUnit = inventory.Price;
-                int totalPrice = pricePerUnit * order.OrderQuantity;
-                string userId = _userManager.GetUserId(User);
+                    var result = postTask.Result;
+                    if (result.IsSuccessStatusCode)
+                    {
+                        return RedirectToAction("Index");
+                    }
+                    
+                }
 
-                TempCart cart = new TempCart();
-                cart.InventoryId = itemId;
-                cart.Cost = totalPrice;
-                cart.Quantity = order.OrderQuantity;
-                cart.UserId = userId;
-
-                _context.TempCart.Add(cart);
-                _context.SaveChanges();
-
-                return RedirectToAction("Cart", "Order");
+                return RedirectToAction("Details", "Inventory", order);
             }
             return Redirect("/Identity/Account/Login/");
 
@@ -90,19 +142,22 @@ namespace Ecommerce.Controllers
         {
             if (_signInManager.IsSignedIn(User))
             {
-                TempCart tempCart = _context.TempCart.Find(id);
-                if (tempCart != null)
+                using (var client = new HttpClient())
                 {
-                    var inventory = _context.Inventory.Single(c => c.Id == tempCart.InventoryId);
-                    inventory.StockRemaining = inventory.StockRemaining + tempCart.Quantity;
-                    _context.TempCart.Remove(tempCart);
-                    _context.SaveChanges();
-                    return RedirectToAction("Cart", "Order");
+                    client.BaseAddress = new Uri("https://localhost:7271/api/");
+
+                    //HTTP DELETE
+                    var deleteTask = client.DeleteAsync("TempCart/" + id.ToString());
+                    deleteTask.Wait();
+
+                    var result = deleteTask.Result;
+                    if (result.IsSuccessStatusCode)
+                    {
+
+                        return RedirectToAction("Index");
+                    }
                 }
-                else
-                {
-                    return NotFound();
-                }
+
             }
             return Redirect("/Identity/Account/Login/");
         }
@@ -111,43 +166,20 @@ namespace Ecommerce.Controllers
         {
             if (_signInManager.IsSignedIn(User))
             {
-                var tempCart = _context.TempCart.Where(c => c.UserId == _userManager.GetUserId(User)).ToList();
-                if (tempCart != null)
+                using (var client = new HttpClient())
                 {
-                    int orderTotal = 0;
-                    for (int i = 0; i < tempCart.Count; i++)
+                    client.BaseAddress = new Uri("https://localhost:7271/api/");
+                    InventoryViewModel inventoryViewModel = new InventoryViewModel();
+                    inventoryViewModel.UserId = _userManager.GetUserId(User);
+                    var postTask = client.PostAsJsonAsync<InventoryViewModel>("Order", inventoryViewModel);
+                    postTask.Wait();
+
+                    var result = postTask.Result;
+                    if (result.IsSuccessStatusCode)
                     {
-                        orderTotal = orderTotal + tempCart[i].Cost;
+                        return RedirectToAction("Index");
                     }
 
-                    Order order = new Order();
-                    order.UserId = _userManager.GetUserId(User);
-                    order.Status = "Pending";
-                    order.Bill = orderTotal;
-                    order.PaymentStatus = false;
-
-                    _context.Orders.Add(order);
-                    _context.SaveChanges();
-                    
-                    int orderId = _context.Orders.Where(c => c.UserId == _userManager.GetUserId(User)).OrderByDescending(c => c.Id).FirstOrDefault().Id;
-
-                    Cart cart;
-
-                    for (int i = 0; i < tempCart.Count; i++)
-                    {
-
-                        cart = new Cart();
-                        cart.OrderId = orderId;
-                        cart.UserId = _userManager.GetUserId(User);
-                        cart.Quantity = tempCart[i].Quantity;
-                        cart.Cost = tempCart[i].Cost;
-                        cart.InventoryId = tempCart[i].InventoryId;
-
-                        _context.Cart.Add(cart);
-                        _context.TempCart.Remove(tempCart[i]);
-                        _context.SaveChanges();
-                        return View("Cart");
-                    }
                 }
             }
             return Redirect("/Identity/Account/Login/");
