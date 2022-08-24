@@ -102,14 +102,14 @@ namespace Ecommerce.Controllers
             return View("EmployeeForm", employee);
         }
 
-        public ActionResult Delete(int id)
+        /*public ActionResult Delete(int id)
         {
             Employee employee = _context.Employees.Find(id);
             _context.Employees.Remove(employee);
             _context.SaveChanges();
             return RedirectToAction("Index", "Employee");
         }
-
+        */
         public ActionResult Details(int id)
         {
             //Employee employee = _context.Employees.Single(c => c.Id == id);
@@ -137,7 +137,7 @@ namespace Ecommerce.Controllers
         {
             //var employee = _context.Employees.ToList();
 
-            IEnumerable<Employee> employee = null;
+            /*IEnumerable<Employee> employee = null;
             using (var client = new HttpClient())
             {
                 client.BaseAddress = new Uri("https://localhost:7271/api/");
@@ -151,9 +151,9 @@ namespace Ecommerce.Controllers
                     readTast.Wait();
                     employee = readTast.Result;
                 }
-            }
+            }*/
 
-            return View(employee);
+            return View();
         }
     }
 }

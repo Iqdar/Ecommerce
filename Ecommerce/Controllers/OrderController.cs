@@ -32,7 +32,7 @@ namespace Ecommerce.Controllers
         {
             if (_signInManager.IsSignedIn(User))
             {
-
+                /*
                 IEnumerable<Order> orders = null;
                 using (var client = new HttpClient())
                 {
@@ -49,8 +49,8 @@ namespace Ecommerce.Controllers
                     }
                 }
 
-                //var orders = _context.Orders.Where(c => c.UserId == _userManager.GetUserId(User)).Include(c => c.User).ToList();
-                return View(orders);
+                var orders = _context.Orders.Where(c => c.UserId == _userManager.GetUserId(User)).Include(c => c.User).ToList();*/
+                return View();
             }
             return Redirect("/Identity/Account/Login/");
         }
@@ -90,6 +90,8 @@ namespace Ecommerce.Controllers
                 IEnumerable<TempCart> tempCart = null;
                 using (var client = new HttpClient())
                 {
+                    string user = _userManager.GetUserId(User);
+                    Console.WriteLine(user);
                     client.BaseAddress = new Uri("https://localhost:7271/api/");
                     var responseTask = client.GetAsync("TempCart/"+_userManager.GetUserId(User));
                     responseTask.Wait();
@@ -107,37 +109,39 @@ namespace Ecommerce.Controllers
             return Redirect("/Identity/Account/Login/");
         }
 
+        [HttpPost]
+        [ValidateAntiForgeryToken]
         public ActionResult AddCart(InventoryViewModel order)
         {
-            TempCart cart = new TempCart();
-            cart.InventoryId = order.Id;
-            cart.UserId = _userManager.GetUserId(User);
-            cart.Quantity = order.OrderQuantity;
-            cart.Cost = order.Price * order.OrderQuantity;
             if (_signInManager.IsSignedIn(User))
             {
+                TempCart cart = new TempCart();
+                cart.InventoryId = order.Id;
+                cart.UserId = _userManager.GetUserId(User);
+                cart.Quantity = order.OrderQuantity;
+                cart.Cost = order.Price * order.OrderQuantity;
+            
                 using (var client = new HttpClient())
                 {
                     client.BaseAddress = new Uri("https://localhost:7271/api/");
 
                     var postTask = client.PostAsJsonAsync<TempCart>("TempCart", cart);
                     postTask.Wait();
-                    return RedirectToAction("Index");
 
                     var result = postTask.Result;
                     if (result.IsSuccessStatusCode)
                     {
-                        return RedirectToAction("Index");
+                        return RedirectToAction("Cart");
                     }
                     
                 }
 
-                return RedirectToAction("Details", "Inventory", order);
+                return RedirectToAction("Details", "Inventory", order.Id);
             }
             return Redirect("/Identity/Account/Login/");
 
         }
-
+        /*
         public IActionResult DeleteCart(int id)
         {
             if (_signInManager.IsSignedIn(User))
@@ -184,7 +188,7 @@ namespace Ecommerce.Controllers
             }
             return Redirect("/Identity/Account/Login/");
         }
-
+        */
         public IActionResult UpdateOrder(int id, string orderStatus, bool paymentStatus) {
             var order = _context.Orders.Single(c => c.Id == id);
             if (order == null)

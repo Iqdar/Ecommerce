@@ -17,7 +17,7 @@ namespace Ecommerce.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "6.0.6")
+                .HasAnnotation("ProductVersion", "6.0.8")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder, 1L, 1);
@@ -97,6 +97,27 @@ namespace Ecommerce.Migrations
                         .HasFilter("[NormalizedUserName] IS NOT NULL");
 
                     b.ToTable("AspNetUsers", (string)null);
+                });
+
+            modelBuilder.Entity("Ecommerce.Dtos.EcommerceUserDto", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Address")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("BirthDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("EcommerceUserDto");
                 });
 
             modelBuilder.Entity("Ecommerce.Models.Cart", b =>
@@ -250,6 +271,41 @@ namespace Ecommerce.Migrations
                     b.ToTable("TempCart");
                 });
 
+            modelBuilder.Entity("Ecommerce.Models.ViewModels.InventoryViewModel", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ImageName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ItemName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Price")
+                        .HasColumnType("int");
+
+                    b.Property<int>("StockRemaining")
+                        .HasColumnType("int");
+
+                    b.Property<string>("UserId1")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId1");
+
+                    b.ToTable("InventoryViewModel");
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
                 {
                     b.Property<string>("Id")
@@ -390,7 +446,7 @@ namespace Ecommerce.Migrations
             modelBuilder.Entity("Ecommerce.Models.Cart", b =>
                 {
                     b.HasOne("Ecommerce.Models.Inventory", "Inventory")
-                        .WithMany()
+                        .WithMany("Carts")
                         .HasForeignKey("InventoryId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -402,7 +458,7 @@ namespace Ecommerce.Migrations
                         .IsRequired();
 
                     b.HasOne("Ecommerce.Areas.Identity.Data.EcommerceUser", "User")
-                        .WithMany()
+                        .WithMany("Carts")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -428,7 +484,7 @@ namespace Ecommerce.Migrations
             modelBuilder.Entity("Ecommerce.Models.TempCart", b =>
                 {
                     b.HasOne("Ecommerce.Models.Inventory", "Inventory")
-                        .WithMany()
+                        .WithMany("TempCarts")
                         .HasForeignKey("InventoryId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -440,6 +496,15 @@ namespace Ecommerce.Migrations
                         .IsRequired();
 
                     b.Navigation("Inventory");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Ecommerce.Models.ViewModels.InventoryViewModel", b =>
+                {
+                    b.HasOne("Ecommerce.Areas.Identity.Data.EcommerceUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId1");
 
                     b.Navigation("User");
                 });
@@ -497,7 +562,16 @@ namespace Ecommerce.Migrations
 
             modelBuilder.Entity("Ecommerce.Areas.Identity.Data.EcommerceUser", b =>
                 {
+                    b.Navigation("Carts");
+
                     b.Navigation("Orders");
+
+                    b.Navigation("TempCarts");
+                });
+
+            modelBuilder.Entity("Ecommerce.Models.Inventory", b =>
+                {
+                    b.Navigation("Carts");
 
                     b.Navigation("TempCarts");
                 });

@@ -12,14 +12,15 @@
 }
 
 <h1>Cart</h1>
- @foreach(var cart in Model){
+
+@foreach(var cart in Model){
      <div class='CartBox'>
          <div class='ImgBox'>
              <img src="~/Images/@cart.Inventory.ImageName" class='CartImage CI'/>
         </div>
          <div class = 'CartDescription row'>
              <div class='CDc1'>
-                 <div>            install
+                 <div>         
                      <h6><b>Item:</b></h6>
                      @cart.Inventory.ItemName x @cart.Quantity
                  </div>
@@ -62,7 +63,9 @@
                     $.ajax({
                         url:"/api/TempCart/"+button.attr("data-cart-id"),
                         method: "DELETE",
-                        
+                        success: function(){
+                            document.location.reload();
+                        }
                     });
                 }
             });
@@ -72,6 +75,9 @@
                     $.ajax({
                         url:"/api/Order/"+button.attr("user-id"),
                         method: "POST",
+                        success: function(){
+                            window.location.replace("/Order/");
+                        }
                     });
                 }
             });

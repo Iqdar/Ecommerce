@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel;
+using Ecommerce.Areas.Identity.Data;
 
 namespace Ecommerce.Models.ViewModels
 {

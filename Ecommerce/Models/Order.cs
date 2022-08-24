@@ -17,5 +17,6 @@ namespace Ecommerce.Models
         public EcommerceUser User { get; set; }
         public string UserId { get; set; }
         public ICollection<Cart> Carts { get; set; }
+
     }
 }

@@ -13,7 +13,7 @@ namespace Ecommerce.Controllers
     {
         private EcommerceContext _context;
         private IWebHostEnvironment _webHostEnvironment;
-        private UserManager<EcommerceUser> _userManager;
+        private readonly UserManager<EcommerceUser> _userManager;
 
         public InventoryController(EcommerceContext db, IWebHostEnvironment webHostEnvironment, UserManager<EcommerceUser> userManager)
         {
@@ -175,21 +175,22 @@ namespace Ecommerce.Controllers
                     var readTast = result.Content.ReadAsAsync<Inventory>();
                     readTast.Wait();
                     inventory = readTast.Result;
+                    ivm.Id = inventory.Id;
+                    ivm.ItemName = inventory.ItemName;
+                    ivm.Price = inventory.Price;
+                    ivm.Description = inventory.Description;
+                    ivm.ImageName = inventory.ImageName;
+                    ivm.StockRemaining = inventory.StockRemaining;
+                    ivm.UserId = _userManager.GetUserId(User);
                 }
-                ivm.Id = inventory.Id;
-                ivm.ItemName = inventory.ItemName;
-                ivm.Price = inventory.Price;
-                ivm.Description = inventory.Description;
-                ivm.ImageName = inventory.ImageName;
-                ivm.StockRemaining = inventory.StockRemaining;
-                ivm.UserId = _userManager.GetUserId(User);
+                
             }
             return View(ivm);
         }
 
         public IActionResult Index()
         {
-            IEnumerable<Inventory> inventory = null;
+            /*IEnumerable<Inventory> inventory = null;
             using (var client = new HttpClient())
             {
                 client.BaseAddress = new Uri("https://localhost:7271/api/");
@@ -203,8 +204,8 @@ namespace Ecommerce.Controllers
                     readTast.Wait();
                     inventory = readTast.Result;
                 }
-            }
-            return View(inventory);
+            }*/
+            return View();
         }
     }
 }

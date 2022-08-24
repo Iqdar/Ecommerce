@@ -54,7 +54,7 @@
 @if (SignInManager.IsSignedIn(User))
 {
     <h2>Add Order</h2>
-    <form>
+    /*<form>
         <div>
             <label>Quantity:</label>
             <input type='number' name='orderQuantity' id = 'orderQuantity' class="form-control"/>
@@ -64,7 +64,7 @@
         <div id='addCart'>
             <input type="button" class='btn btn-primary' id="add-cart" value="Add Cart" />
         </div>
-    </form>
+    </form>*/
     @using (Html.BeginForm("AddCart", "Order"))
     {
         <div>
@@ -72,6 +72,11 @@
             <input asp-for="OrderQuantity" class="form-control"/>
             @Html.ValidationMessageFor(c => c.OrderQuantity)
         </div>
+        <br />
+        @Html.HiddenFor(c => c.Id)
+        @Html.HiddenFor(c => c.OrderQuantity)
+        @Html.HiddenFor(c => c.Price)
+        @Html.HiddenFor(c => c.StockRemaining)
         <button type="submit" class="btn btn-primary">Add Cart</button>
     }
 }
@@ -84,16 +89,31 @@
     <script>
         $(document).ready(function(){
             $("#addCart").on("click","#add-cart", function(){
-
+                var users = new Object();
+                $.ajax({
+                    url:"/api/EcommerceUser/"+"@UserManager.GetUserId(User)",
+                    method: "GET",
+                    contentType: "application/json; charset=utf-8",
+                    dataType:"json",
+                    success: function(data){
+                        users.id = data.id;
+                        users.name = data.name;
+                        users.address = data.address;
+                        users.birthDate = data.birthDate;
+                    }
+                });
                 const tempCart = {
-                    Id: 0,
-                    Quantity: $('#orderQuantity').val(),
-                    Cost: @Model.Price *  $('#orderQuantity').val(),
-                    InventoryId: @Model.Id,
-                    UserId: '@UserManager.GetUserId(User)'
+                    id: 0,
+                    quantity: $('#orderQuantity').val(),
+                    cost: @Model.Price *  $('#orderQuantity').val(),
+                    inventory:null,
+                    inventoryId: @Model.Id,
+                    user:null,
+                    userId: '@UserManager.GetUserId(User)'
 
                 };
-                
+                console.log(users);
+                console.log(tempCart)
                  if(confirm("Add to Cart?")){
                     console.log(tempCart)
                     $.ajax({
@@ -101,6 +121,7 @@
                         url:"/api/TempCart/",
                         method: "POST",
                         type:"POST",
+                        contentType:"application/json; charset=utf-8",
                         dataType :'json',
                         success: function(){
                             console.log('Success')

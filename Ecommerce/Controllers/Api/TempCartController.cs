@@ -100,21 +100,19 @@ namespace Ecommerce.Controllers.Api
         [HttpPost]
         public async Task<ActionResult<TempCartDto>> PostTempCart(TempCartDto tempCart)
         {
-            if (_context.TempCart == null)
-            {
-                return Problem("Entity set 'EcommerceContext.TempCart'  is null.");
-            }
-
+            Console.WriteLine(tempCart);
             var inventory = _context.Inventory.Find(tempCart.InventoryId);
-            if(inventory == null)
-            {
-                return Problem("Item not found");
-            }
+            Console.WriteLine(inventory);
+
             int stock = inventory.StockRemaining;
             if (stock >= tempCart.Quantity)
             {
+                inventory.StockRemaining = inventory.StockRemaining - tempCart.Quantity;
                 var cart = _mapper.Map<TempCartDto, TempCart>(tempCart);
+                Console.WriteLine(cart);
                 _context.TempCart.Add(cart);
+                _context.Entry(inventory).State = EntityState.Modified;
+
                 await _context.SaveChangesAsync();
 
 
@@ -125,8 +123,8 @@ namespace Ecommerce.Controllers.Api
             }
             /*var tempCart = _mapper.Map<TempCartDto, TempCart>(tempCartDto);
             _context.TempCart.Add(tempCart);
-            await _context.SaveChangesAsync();*/
-
+            await _context.SaveChangesAsync();
+            */
             return CreatedAtAction("GetTempCart", new { id = tempCart.Id }, tempCart);
         }
 

@@ -16,5 +16,9 @@ namespace Ecommerce.Models
         public int StockRemaining { get; set; }
         public int Price { get; set; }
         public string? ImageName { get; set; }
+
+        public ICollection<TempCart> TempCarts { get; set; }
+        public ICollection<Cart> Carts { get; set; }
+
     }
 }
